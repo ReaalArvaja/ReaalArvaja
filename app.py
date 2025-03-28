@@ -4,13 +4,13 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    # Näitab majaplaani vaadet
+    # A simple homepage with a link to the guessing game
     return render_template('index.html')
 
-@app.route('/photosphere/<room>')
-def photosphere(room):
-    # Näitab konkreetse ruumi fotosfääri
-    return render_template('photosphere.html', room=room)
+@app.route('/map')
+def map_view():
+    # This page shows the interactive map for guessing
+    return render_template('map.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
