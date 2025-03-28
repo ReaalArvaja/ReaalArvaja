@@ -2,118 +2,270 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Guess the Photo Location</title>
+    <title>ReaalArvaja🕵️</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-      body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-          display: flex;
-          flex-direction: row; /* Side-by-side layout */
-          align-items: center;
-          gap: 20px;
-      }
-      #photo-container {
-          flex: 2; /* Large photo area */
-          text-align: center;
-      }
-      #photo img {
-          max-width: 100%;
-          height: auto;
-          display: block;
-          margin: 0 auto;
-          border: 2px solid black;
-      }
-      #map-container {
-          flex: 1; /* Smaller map area */
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-      }
-      #map {
-          width: 400px;  /* Larger map */
-          height: 400px;
-          border: 2px solid black;
-      }
-      button {
-          margin-top: 10px;
-          padding: 10px;
-          font-size: 16px;
-      }
-      #result {
-          margin-top: 10px;
-          font-weight: bold;
-      }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.2);
+        }
+
+        #photo-container {
+            flex: 2;
+            position: relative;
+        }
+
+        #photo {
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #photo img {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            filter: brightness(0.9);
+            transition: filter 0.3s;
+        }
+
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .hud-item {
+            background: #333;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #map {
+            width: 500px;
+            height: 500px;
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+        }
+
+        button {
+            background: #00ffff;
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .heatmap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
-    <!-- Left Side: Large Photo -->
-    <div id="photo-container">
-        <h1>Where is this room?</h1>
-        <img src="/static/images/room331.jpg" alt="Room331 Photo">
+    <div id="hud">
+        <div class="hud-item">
+            🕒 Time: <span id="timer">60</span>s
+        </div>
+        <div class="hud-item">
+            🏆 Score: <span id="score">0</span>
+        </div>
+        <div class="hud-item">
+            🔄 Round: <span id="round">1</span>/5
+        </div>
     </div>
 
-    <!-- Right Side: Interactive Map -->
-    <div id="map-container">
-        <h2>Click on the map</h2>
-        <div id="map"></div>
-        <button id="submitGuess" disabled>Submit Guess</button>
-        <p id="result"></p>
-        <p><a href="/">Back to Home</a></p>
+    <div class="game-container">
+        <div id="photo-container">
+            <div id="photo">
+                <img src="" alt="Mystery Location">
+                <div class="heatmap" id="heatmap"></div>
+            </div>
+        </div>
+
+        <div id="map-container">
+            <div id="map"></div>
+            <button id="submitGuess" style="margin-top: 20px;" disabled>🚀 Launch Guess</button>
+            <div id="result"></div>
+        </div>
     </div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map', {
+        // Game State
+        let score = 0;
+        let timeLeft = 60;
+        let currentRound = 1;
+        let gameActive = true;
+        let timerInterval;
+        const locations = [
+            {name: "Anu Kell", img: "room331.jpg", coord: [1200, 800]},
+            {name: "Villu Raja", img: "vellu203.jpg", coord: [500, 600]},
+            {name: "Martin Saar", img: "saar204.jpg", coord: [900, 200]}
+            // Add more locations as needed
+        ];
+
+        // Map dimensions
+        const imgWidth = 2000, imgHeight = 1500;
+
+        // Map Setup
+        const map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -2,  // Allow zooming out
-            maxZoom: 2,   // Allow zooming in
+            minZoom: -2,
+            maxZoom: 2,
             zoomControl: true
         });
 
-        // Image dimensions
-        var imgWidth = 2000, imgHeight = 1500;
-        var imageUrl = '/static/images/school_plan.jpg';
-
-        // Define map bounds based on image size
-        var southWest = map.unproject([0, imgHeight], map.getMaxZoom());
-        var northEast = map.unproject([imgWidth, 0], map.getMaxZoom());
-        var bounds = new L.LatLngBounds(southWest, northEast);
-
-        // Add image as map background
-        L.imageOverlay(imageUrl, bounds).addTo(map);
+        const southWest = map.unproject([0, imgHeight], map.getMaxZoom());
+        const northEast = map.unproject([imgWidth, 0], map.getMaxZoom());
+        const bounds = new L.LatLngBounds(southWest, northEast);
+        L.imageOverlay('/static/images/school_plan.jpg', bounds).addTo(map);
         map.fitBounds(bounds);
 
-        // True location of Room 331 in pixels (adjust as needed)
-        var truePixel = [1200, 800];
-        var trueLatLng = map.unproject(truePixel, map.getMaxZoom());
+        // Game Logic
+        let currentLocation = null;
+        let guessMarker = null;
+        let trueMarker = null;
 
-        var guessMarker = null;
-        var guessLatLng = null;
+        function initializeGame() {
+            score = 0;
+            timeLeft = 60;
+            currentRound = 1;
+            gameActive = true;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('round').textContent = '1';
+            document.getElementById('timer').textContent = '60';
+            newRound();
+            startTimer();
+        }
 
-        // Allow clicking on the map to place a guess
-        map.on('click', function(e) {
-            guessLatLng = e.latlng;
-            if (guessMarker) {
-                map.removeLayer(guessMarker);
+        function newRound() {
+            if (!gameActive) return;
+            
+            if (currentRound > 5) {
+                endGame();
+                return;
             }
-            guessMarker = L.marker(guessLatLng).addTo(map);
+            
+            currentLocation = locations[Math.floor(Math.random() * locations.length)];
+            document.getElementById('photo').querySelector('img').src = 
+                `/static/images/${currentLocation.img}`;
+            resetMap();
+        }
+
+        function resetMap() {
+            if (guessMarker) map.removeLayer(guessMarker);
+            if (trueMarker) map.removeLayer(trueMarker);
+            
+            const trueLatLng = map.unproject(
+                currentLocation.coord, 
+                map.getMaxZoom()
+            );
+            
+            trueMarker = L.marker(trueLatLng, {
+                opacity: 0,
+                icon: L.divIcon({className: 'true-marker', html: '🎯'})
+            }).addTo(map);
+        }
+
+        function calculatePixelDistance(guessLatLng) {
+            const truePoint = map.project(trueMarker.getLatLng(), map.getMaxZoom());
+            const guessPoint = map.project(guessLatLng, map.getMaxZoom());
+            return Math.sqrt(
+                Math.pow(truePoint.x - guessPoint.x, 2) + 
+                Math.pow(truePoint.y - guessPoint.y, 2)
+            );
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 3000);
+            document.getElementById("result").innerHTML = 
+                `Game Over! Redirecting home...<br>Final Score: ${score}`;
+        }
+
+        // Event Listeners
+        map.on('click', e => {
+            if (!gameActive) return;
+            if (guessMarker) map.removeLayer(guessMarker);
+            guessMarker = L.marker(e.latlng, {
+                icon: L.divIcon({className: 'guess-marker', html: '📍'})
+            }).addTo(map);
             document.getElementById("submitGuess").disabled = false;
         });
 
-        // Calculate distance between guess and correct location
-        function computeDistance(latlng1, latlng2) {
-            return latlng1.distanceTo(latlng2);
-        }
-
-        // Submit button logic
-        document.getElementById("submitGuess").addEventListener("click", function() {
-            if (!guessLatLng) return;
-            var distance = computeDistance(guessLatLng, trueLatLng);
-            document.getElementById("result").textContent =
-                "Your guess is " + Math.round(distance) + " pixels away from the correct location.";
+        document.getElementById("submitGuess").addEventListener("click", () => {
+            if (!gameActive) return;
+            
+            const distance = calculatePixelDistance(guessMarker.getLatLng());
+            const points = Math.max(1000 - Math.floor(distance), 0);
+            score += points;
+            document.getElementById('score').textContent = score;
+            
+            document.getElementById("result").innerHTML = `
+                ${distance < 50 ? "🎉 Bullseye!" : 
+                 distance < 150 ? "🔥 Getting warm!" : 
+                 distance < 300 ? "🙂 Close enough" : "❄️ Cold..."}<br>
+                +${points} points! (${Math.round(distance)}px)
+            `;
+            
+            currentRound++;
+            document.getElementById('round').textContent = currentRound;
+            document.getElementById("submitGuess").disabled = true;
+            setTimeout(newRound, 2000);
         });
+
+        // Start the game
+        initializeGame();
     </script>
 </body>
 </html>
