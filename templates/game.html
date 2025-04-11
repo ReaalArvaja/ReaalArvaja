@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ReaalArvaja 🕵️ - Game</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #00ffff;
+    }
+    /* HUD at the top */
+    #hud {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 20px;
+      box-sizing: border-box;
+      background: rgba(0,0,0,0.8);
+      z-index: 2;
+      position: absolute;
+      top: 0;
+    }
+    .hud-item {
+      background: #333;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    /* Main container fills the viewport minus the HUD */
+    .game-container {
+      position: absolute;
+      top: 60px; /* height of the HUD */
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      gap: 10px;
+    }
+    /* Left side: Virtual tour (Matterport) takes ~75% of the width */
+    #photo-container {
+      flex: 3;
+      position: relative;
+    }
+    /* The Matterport iframe fills its container */
+    #matterport-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.3);
+    }
+    /* Right side: the guessing map occupies about 25% */
+    #map-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.8);
+      border-radius: 10px;
+    }
+    /* The Leaflet map */
+    #map {
+      width: 100%;
+      height: 300px;
+      border: 3px solid #00ffff;
+      border-radius: 10px;
+    }
+    button {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
+    #result {
+      font-size: 1.1em;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-item">🕒 Time: <span id="timer">60</span>s</div>
+    <div class="hud-item">🏆 Score: <span id="score">0</span></div>
+    <div class="hud-item">🔄 Round: <span id="round">1</span>/5</div>
+  </div>
+  
+  <div class="game-container">
+    <!-- Left: Matterport Virtual Tour -->
+    <div id="photo-container">
+      <iframe id="matterport-iframe" src="" allowfullscreen="allowfullscreen"></iframe>
+    </div>
+    
+    <!-- Right: School Plan Map for Guessing -->
+    <div id="map-container">
+      <div id="map"></div>
+      <button id="submitGuess" disabled>🚀 Launch Guess</button>
+      <div id="result"></div>
+    </div>
+  </div>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // -------------- Game State and Settings --------------
+    let score = 0;
+    let timeLeft = 60;
+    let currentRound = 1;
+    let gameActive = true;
+    let timerInterval;
+  
+    // Locations for the guess game on the school plan.
+    // Coordinates here are in pixel values relative to your school_plan.jpg.
+    const locations = [
+      {name: "Anu Kell", coord: [1200, 800]},
+      {name: "Villu Raja", coord: [500, 600]},
+      {name: "Martin Saar", coord: [900, 200]}
+    ];
+  
+    // Dimensions for the school_plan.jpg
+    const imgWidth = 2000, imgHeight = 1500;
+  
+    // Matterport base embed info: we use the same tour, but randomize starting parameters.
+    const matterportBase = "https://my.matterport.com/show/";
+    const matterportTourID = "JP9YgC9agCW";
+    // Define several parameter sets for random starting scenes/rotations.
+    const matterportParams = [
+      { ss: "9", sr: "-2.58,-1.08" },
+      { ss: "142", sr: "-0.21,-0.45" },
+      { ss: "5", sr: "1.23,0.45" },
+      { ss: "7", sr: "2.34,-0.56" },
+      { ss: "364", sr: "-0.22,-0.68" },
+      { ss: "362", sr: "-2.96,-0.09" },
+      { ss: "343", sr: "-2.81,-0.01" },
+      { ss: "18", sr: "-0.92,-0.67" },
+      { ss: "93", sr: "-0.37,-0.03" },
+      { ss: "162", sr: "-2.28,0.24" }
+    ];
+  
+    // -------------- Setup the Leaflet Map --------------
+    const map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: -2,
+      maxZoom: 2,
+      zoomControl: true
+    });
+    const southWest = map.unproject([0, imgHeight], map.getMaxZoom());
+    const northEast = map.unproject([imgWidth, 0], map.getMaxZoom());
+    const bounds = new L.LatLngBounds(southWest, northEast);
+    L.imageOverlay('/static/images/school_plan.jpg', bounds).addTo(map);
+    map.fitBounds(bounds);
+  
+    // -------------- Game Logic Variables --------------
+    let currentLocation = null;
+    let guessMarker = null;
+    let trueMarker = null;
+  
+    // -------------- Initialize the Game --------------
+    function initializeGame() {
+      score = 0;
+      timeLeft = 60;
+      currentRound = 1;
+      gameActive = true;
+      document.getElementById('score').textContent = '0';
+      document.getElementById('round').textContent = '1';
+      document.getElementById('timer').textContent = '60';
+      newRound();
+      startTimer();
+    }
+  
+    // -------------- New Round Setup --------------
+    function newRound() {
+      if (!gameActive) return;
+      if (currentRound > 5) {
+        endGame();
+        return;
+      }
+      // Pick a random location for guessing.
+      currentLocation = locations[Math.floor(Math.random() * locations.length)];
+      resetMap();
+      updateMatterportEmbed();
+    }
+  
+    function resetMap() {
+      if (guessMarker) map.removeLayer(guessMarker);
+      if (trueMarker) map.removeLayer(trueMarker);
+      // Project the true position (using a fixed zoom 0 for consistency)
+      const trueLatLng = map.unproject(currentLocation.coord, 0);
+      trueMarker = L.marker(trueLatLng, {
+        opacity: 0, // hidden during gameplay
+        icon: L.divIcon({className: 'true-marker', html: '🎯'})
+      }).addTo(map);
+    }
+  
+    // -------------- Update Matterport Embed --------------
+    function updateMatterportEmbed() {
+      // Randomly select a parameter set.
+      const randomParams = matterportParams[Math.floor(Math.random() * matterportParams.length)];
+      // Build the embed URL with parameters to autoplay and (hopefully) hide UI.
+      const embedUrl = `${matterportBase}?play=1&lang=en-US&m=${matterportTourID}&ss=${randomParams.ss}&sr=${randomParams.sr}&brand=0&ui_controls=0&help=0`;
+      // Set the Matterport iframe src.
+      document.getElementById("matterport-iframe").src = embedUrl;
+    }
+  
+    // -------------- Distance Calculation --------------
+    // Project both the guessed and true positions using zoom level 0.
+    function calculatePixelDistance(guessLatLng) {
+      const truePoint = map.project(trueMarker.getLatLng(), 0);
+      const guessPoint = map.project(guessLatLng, 0);
+      return Math.sqrt(Math.pow(truePoint.x - guessPoint.x, 2) + Math.pow(truePoint.y - guessPoint.y, 2));
+    }
+  
+    // -------------- Timer Functions --------------
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = timeLeft;
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+  
+    function endGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
+      document.getElementById("result").innerHTML =
+        `Game Over! Redirecting home...<br>Final Score: ${score}`;
+    }
+  
+    // -------------- Event Listeners --------------
+    map.on('click', e => {
+      if (!gameActive) return;
+      if (guessMarker) map.removeLayer(guessMarker);
+      guessMarker = L.marker(e.latlng, {
+        icon: L.divIcon({className: 'guess-marker', html: '📍'})
+      }).addTo(map);
+      document.getElementById("submitGuess").disabled = false;
+    });
+    
+    document.getElementById("submitGuess").addEventListener("click", () => {
+      if (!gameActive || !guessMarker) return;
+      const distance = calculatePixelDistance(guessMarker.getLatLng());
+      const points = Math.max(1000 - Math.floor(distance), 0);
+      score += points;
+      document.getElementById('score').textContent = score;
+  
+      document.getElementById("result").innerHTML = `
+        ${distance < 50 ? "🎉 Bullseye!" : 
+         distance < 150 ? "🔥 Getting warm!" : 
+         distance < 300 ? "🙂 Close enough" : "❄️ Cold..."}<br>
+        +${points} points! (${Math.round(distance)}px away)
+      `;
+  
+      currentRound++;
+      document.getElementById('round').textContent = currentRound;
+      document.getElementById("submitGuess").disabled = true;
+      setTimeout(newRound, 2000);
+    });
+  
+    // -------------- Start the Game --------------
+    initializeGame();
+  </script>
+</body>
+</html>
