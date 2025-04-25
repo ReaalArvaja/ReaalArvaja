@@ -98,7 +98,7 @@
 <body>
   <!-- HUD -->
   <div id="hud">
-    <div class="hud-item">🕒 Time: <span id="timer">60</span>s</div>
+    <div class="hud-item">🕒 Aeg: <span id="timer">60</span>s</div>
     <div class="hud-item">🏆 Score: <span id="score">0</span></div>
     <div class="hud-item">🔄 Round: <span id="round">1</span>/5</div>
   </div>
@@ -264,18 +264,33 @@
       const points = Math.max(1000 - Math.floor(distance), 0);
       score += points;
       document.getElementById('score').textContent = score;
-  
+
+      // Show the true marker
+      trueMarker.setOpacity(1);
+
+      // Draw a line between the guess and the true location
+      const line = L.polyline([guessMarker.getLatLng(), trueMarker.getLatLng()], {
+        color: 'cyan',
+        weight: 2,
+        dashArray: '5, 5'
+      }).addTo(map);
+
       document.getElementById("result").innerHTML = `
         ${distance < 50 ? "🎉 Bullseye!" : 
          distance < 150 ? "🔥 Getting warm!" : 
          distance < 300 ? "🙂 Close enough" : "❄️ Cold..."}<br>
         +${points} points! (${Math.round(distance)}px away)
       `;
-  
+
       currentRound++;
       document.getElementById('round').textContent = currentRound;
       document.getElementById("submitGuess").disabled = true;
-      setTimeout(newRound, 2000);
+
+      // Move to the next round after 2 seconds
+      setTimeout(() => {
+        map.removeLayer(line); // Remove the line before starting the next round
+        newRound();
+      }, 2000);
     });
   
     // -------------- Start the Game --------------
