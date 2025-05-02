@@ -11,7 +11,7 @@
   .mp-sweep-point-circle {    /* alternate class name in some versions */
     display: none !important;
   }
-  
+
     html, body {
       margin: 0;
       padding: 0;
@@ -263,7 +263,7 @@
       // Randomly select a parameter set.
       const randomParams = matterportParams[Math.floor(Math.random() * matterportParams.length)];
       // Build the embed URL with parameters to autoplay and (hopefully) hide UI.
-      const embedUrl = `${matterportBase}?play=1&lang=en-US&m=${matterportTourID}&ss=${randomParams.ss}&sr=${randomParams.sr}&brand=0&ui_controls=0&help=0&hr=0&ts=-1&dh=0&vr=0&brand=0&mls=2`;
+      const embedUrl = `${matterportBase}?play=1&lang=en-US&m=${matterportTourID}&ss=${randomParams.ss}&sr=${randomParams.sr}&brand=0&ui_controls=0&help=0&hr=0&ts=-1&dh=0&vr=0&brand=0&mls=2&f=0&fp=0&gt=0`;
       // Set the Matterport iframe src.
       document.getElementById("matterport-iframe").src = embedUrl;
     }
