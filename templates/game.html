@@ -5,6 +5,13 @@
   <title>ReaalArvaja 🕵️ - Game</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
+
+      /* Hide Matterport navigation pucks (sweep points) */
+  .mp-sweep-point,            /* the little white puck elements */ 
+  .mp-sweep-point-circle {    /* alternate class name in some versions */
+    display: none !important;
+  }
+  
     html, body {
       margin: 0;
       padding: 0;
