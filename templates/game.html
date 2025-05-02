@@ -18,6 +18,7 @@
       height: 100vh;
       overflow: hidden;
       font-family: 'Courier New', monospace;
+      
       background: #1a1a1a;
       color: #00ffff;
     }
@@ -125,22 +126,6 @@
       font-size: 1.5rem;
       z-index: 10; /* Ensure it overlays the iframe */
     }
-
-    #loading-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 1); /* Dark loading screen */
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      z-index: 20; /* Ensure it overlays everything */
-      display: none; /* Hidden by default */
-    }
   </style>
 </head>
 <body>
@@ -158,9 +143,6 @@
         <iframe id="matterport-iframe" src="" frameborder="0"></iframe>
         <div class="matterport-banner">
           I love commiting crimes!
-        </div>
-        <div id="loading-screen">
-          Loading next location...
         </div>
       </div>
     </div>
@@ -246,14 +228,23 @@
     // -------------- New Round Setup --------------
     function newRound() {
       if (!gameActive) return;
-      if (currentRound > 5) {
+
+      // Check if the game has ended
+      if (currentRound > totalRounds) {
         endGame();
         return;
       }
-      // Pick a random location for guessing.
-      currentLocation = locations[Math.floor(Math.random() * locations.length)];
+
+      // Start the timer for the new round
+      startTimer();
+
+      // Pick a new location for the round
+      currentLocation = locations[currentLocationIndex];
       resetMap();
       updateMatterportEmbed();
+
+      // Update round display
+      document.getElementById('round').textContent = currentRound;
     }
   
     function resetMap() {
@@ -307,7 +298,7 @@
         if (currentLocationIndex >= locationsPerRound) {
           currentLocationIndex = 0;
           currentRound++;
-          if (currentRound > totalRounds) {
+          if (currentRound >= totalRounds) {
             endGame();
             return;
           }
@@ -317,15 +308,10 @@
     }
 
     function newLocation() {
-      // Show loading screen for 5 seconds
-      const loadingScreen = document.getElementById("loading-screen");
-      loadingScreen.style.display = "flex";
-
       setTimeout(() => {
-        loadingScreen.style.display = "none"; // Hide loading screen
         updateMatterportEmbed(); // Update Matterport iframe
-        startTimer(); // Start the timer after loading
-      }, 5000);
+        startTimer(); // Start the timer
+      }, 1000);
 
       // Reset the true marker and guess marker
       if (trueMarker) map.removeLayer(trueMarker);
