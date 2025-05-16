@@ -7,8 +7,8 @@
     <style>
         body {
             font-family: 'Courier New', monospace;
-            background: #1a1a1a;
-            color: #00ffff;
+            background: #291720;
+            color: #D90368;
             margin: 0;
             height: 100vh;
             display: flex;
@@ -22,10 +22,10 @@
         .cyber-container {
             text-align: center;
             padding: 2rem;
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #00ffff;
+            background: #291720;
+            border: 3px solid #D90368;
             border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 30px #D90368;
             position: relative;
             z-index: 2;
             backdrop-filter: blur(5px);
@@ -36,7 +36,7 @@
             text-transform: uppercase;
             letter-spacing: 4px;
             margin-bottom: 2rem;
-            text-shadow: 0 0 10px #00ffff;
+            text-shadow: 0 0 10px #D90368;
             animation: textGlow 1.5s ease-in-out infinite alternate;
         }
 
@@ -44,9 +44,9 @@
             display: inline-block;
             padding: 1rem 2rem;
             font-size: 1.5rem;
-            color: #000;
-            background: #00ffff;
-            border: 2px solid #00ffff;
+            color: #291720;
+            background: #D90368;
+            border: 2px solid #D90368;
             border-radius: 5px;
             text-decoration: none;
             transition: all 0.3s ease;
@@ -57,8 +57,8 @@
 
         .cyber-link:hover {
             background: transparent;
-            color: #00ffff;
-            box-shadow: 0 0 20px #00ffff;
+            color: #D90368;
+            box-shadow: 0 0 20px #D90368;
             transform: scale(1.05);
         }
 
@@ -72,7 +72,7 @@
             background: linear-gradient(
                 90deg,
                 transparent,
-                rgba(0, 255, 255, 0.4),
+            #D90368,
                 transparent
             );
             transition: 0.5s;
@@ -87,15 +87,15 @@
             width: 100%;
             height: 100%;
             background: 
-                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(180deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+                linear-gradient(90deg, #D90368) 1px, transparent 1px),
+                linear-gradient(180deg, #D90368 1px, transparent 1px);
             background-size: 20px 20px;
             z-index: 1;
         }
 
         @keyframes textGlow {
             from {
-                text-shadow: 0 0 10px #00ffff;
+                text-shadow: 0 0 10px #D90368;
             }
             to {
                 text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
@@ -109,7 +109,7 @@
             background: linear-gradient(
                 to bottom,
                 transparent 50%,
-                rgba(0, 255, 255, 0.1) 51%,
+                #D90368 51%,
                 transparent 52%
             );
             animation: scan 4s linear infinite;

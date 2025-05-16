@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About Us</title>
+  <title>meie</title>
 
   <!-- Google Font: Kalam -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,7 +33,7 @@
     }
     header h1 {
       font-size: 3rem;
-      color: #F08080;
+      color: #FEEFEC;
       margin-bottom: 0.5rem;
     }
     header p.tagline {
@@ -88,7 +88,7 @@
     }
     .member-card p.role {
       font-style: italic;
-      color: #F08080;
+      color: #FEEFEC;
       font-size: 0.95rem;
     }
     .back-link {
@@ -100,6 +100,28 @@
       color: #F4978E;
     }
     .back-link:hover { text-decoration: underline; }
+
+     /* Base link color */
+  a {
+    color: #FEEFEC;            /* Blue-ish default */
+    text-decoration: none;     /* Remove underline if desired */
+  }
+
+  /* Visited links */
+  a:visited {
+    color: #9b59b6;            /* Purple after click */
+  }
+
+  /* Hover state */
+  a:hover {
+    color: #F08080;            /* Darker blue on hover */
+    text-decoration: underline;/* Underline on hover for clarity */
+  }
+
+  /* Active (while pressing) */
+  a:active {
+    color: #FEEFEC;            /* Teal when active */
+  }
 
     @media (max-width: 600px) {
       .member-card { width: calc(50% - 1rem); }
@@ -127,7 +149,7 @@
           <p class="role">actual progeja</p>
         </div>
         <div class="member-card">
-          <img src="/static/images/bob.jpg" alt="tautumeitas" />
+          <img src="https://www.latvia.eu/uploads/2025/05/tautumeitas_8.jpg" alt="tautumeitas" />
           <h3>tautumeitas</h3>
           <p class="role"><a href="https://www.youtube.com/watch?v=tRTfxUJtDOs">ikooniline läti girl group</a></p>
         </div>
@@ -140,7 +162,7 @@
       </div>
     </section>
 
-    <a class="back-link" href="{{ url_for('index') }}">← Back to Home</a>
+    <a class="back-link" href="{{ url_for('index') }}">mine minema</a>
   </div>
 </body>
 </html>
