@@ -7,6 +7,11 @@ def index():
     # A simple homepage with a link to the guessing game
     return render_template('index.html')
 
+@app.route("/credits")
+def credits():
+    #hehehehe i did credist page 
+    return render_template("credits.html")
+
 @app.route('/map')
 def map_view():
     # This page shows the interactive map for guessing
