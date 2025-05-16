@@ -1,8 +1,29 @@
+<!-- lisan siia helina notesid: teksti võiks rohkem olla maybe??? annaks JSile rohkem potentsiaali aga pole necessary-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 1) Animate.css for fade-in -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    integrity="sha512-Kc+nZCAiYhk/AmY/VlYzqoRYWP27E7m75lI2ISt55lq6B3aIBCizr4oF5Q0XDc6EOK4ajMi8mskNi1hF5df0Fg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  /> <!-- Animate.css is a ready-to-use CSS animations library :contentReference[oaicite:0]{index=0} -->
+
+  <!-- 2) AOS (Animate On Scroll) -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script> <!-- AOS gives you CSS-driven scroll animations without inline styles :contentReference[oaicite:1]{index=1} -->
+
+  <!-- 3) GSAP core -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
+    integrity="sha512-5SoUoQ3Jelvj89ZFv3nY6Cfrb/5KbFFDTNyWW6QIKYjM2Z+JudSN0ZBQCk+kISoF1ZvQ3Em4+4IZCA9uUAyuiA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script> <!-- GSAP for high-performance, timeline-based JS animations :contentReference[oaicite:2]{index=2} -->
+
   <title>meie</title>
 
   <!-- Google Font: Kalam -->
@@ -109,7 +130,7 @@
 
   /* Visited links */
   a:visited {
-    color: #9b59b6;            /* Purple after click */
+    color: #FEEFEC;            /* Purple after click */
   }
 
   /* Hover state */
@@ -126,34 +147,41 @@
     @media (max-width: 600px) {
       .member-card { width: calc(50% - 1rem); }
     }
+
+     /* AOS requires this to initialize */
+     [data-aos] {
+      opacity: 0;
+      transition-property: opacity, transform;
+    }
+
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="animate__animated animate__fadeInDown" style="--animate-duration: 1s;">
       <h1>hei soooo sellel asjal on autorid</h1>
       <p class="tagline">proge proge proge</p>
     </header>
 
-    <section class="mission">
+    <section class="mission" data-aos="fade-up" data-aos-duration="800">
       <h2>meie misjon</h2>
       <p>meile meeldib süüa kruusa ja petta oma naisi kuumade motikatega. nad said eile teada. ta võtab kassid ja maja ja mulle jääb ainult mu vanavanaisa pärandatud viis milli. tundke palun kaasa</p>
     </section>
 
     <section class="team">
-      <h2>kes</h2>
+      <h2 data-aos="fade-up" data-aos-delay="200">kes</h2>
       <div class="members">
-        <div class="member-card">
+        <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
           <img src="https://avatars.githubusercontent.com/u/65457878?v=4" alt="saarmets" />
           <h3>saarmets</h3>
           <p class="role">actual progeja</p>
         </div>
-        <div class="member-card">
+        <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
           <img src="https://www.latvia.eu/uploads/2025/05/tautumeitas_8.jpg" alt="tautumeitas" />
           <h3>tautumeitas</h3>
           <p class="role"><a href="https://www.youtube.com/watch?v=tRTfxUJtDOs">ikooniline läti girl group</a></p>
         </div>
-        <div class="member-card">
+        <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
           <img src="https://avatars.githubusercontent.com/u/204340044?v=4" alt="rionnoire" />
           <h3>rionnoire</h3>
           <p class="role">oskab urle</p>
@@ -163,6 +191,36 @@
     </section>
 
     <a class="back-link" href="{{ url_for('index') }}">mine minema</a>
+
+    <script>
+      // Initialize AOS
+      AOS.init({ once: true, offset: 100 }); // only animate once when scrolled into view :contentReference[oaicite:3]{index=3}
+  
+      // GSAP hover-scale on .member-card
+      document.querySelectorAll('.member-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          gsap.to(card, { scale: 1.05, duration: 0.3, ease: 'power1.inOut' });
+        });
+        card.addEventListener('mouseleave', () => {
+          gsap.to(card, { scale: 1, duration: 0.3, ease: 'power1.inOut' });
+        });
+      }); // GSAP’s `to()` tweens opacity, transforms, etc., with great perf :contentReference[oaicite:4]{index=4}
+  
+      // Optional: Vanilla JS fade-in on scroll (fallback without AOS)
+      const items = document.querySelectorAll('[data-aos]');
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = 1;
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.2 });
+      items.forEach(el => {
+        el.style.transform = 'translateY(20px)';
+        observer.observe(el);
+      }); // IntersectionObserver is a modern, performant way to trigger CSS transitions on scroll :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6}
+    </script>
   </div>
 </body>
 </html>
