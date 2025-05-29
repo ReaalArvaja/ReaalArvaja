@@ -54,7 +54,7 @@
     }
     header h1 {
       font-size: 3rem;
-      color: #FEEFEC;
+      color: #F08080;
       margin-bottom: 0.5rem;
     }
     header p.tagline {
@@ -123,7 +123,7 @@
     .back-link:hover { text-decoration: underline; }
 
     .pink {
-  filter: sepia(0.3) hue-rotate(320deg) saturate(1.5);
+  filter: sepia(0.8) hue-rotate(320deg) saturate(1.5);
 }
 
 /* Base link color */
@@ -145,7 +145,7 @@ a:hover {
 
 /* Active (while pressing) */
 a:active {
-  color: #FEEFEC;            /* Teal when active */
+  color: #F08080;            /* Teal when active */
 }
 
     @media (max-width: 600px) {
@@ -169,7 +169,7 @@ a:active {
 
     <section class="mission" data-aos="fade-up" data-aos-duration="800">
       <h2>meie misjon</h2>
-      <p>meile meeldib süüa kruusa ja petta oma naisi kuumade motikatega. nad said eile teada. ta võtab kassid ja maja ja mulle jääb ainult mu vanavanaisa pärandatud viis milli. tundke palun kaasa</p>
+      <p><i>meile meeldib süüa kruusa ja petta oma naisi kuumade motikatega. nad said eile teada. ta võtab kassid ja maja ja mulle jääb ainult mu vanavanaisa pärandatud viis milli. tundke palun kaasa</i></p>
     </section>
 
     <section class="team">
@@ -189,6 +189,21 @@ a:active {
           <img src="https://avatars.githubusercontent.com/u/204340044?v=4" class="pink alt="rionnoire" />
           <h3><i>rionnoire</i></h3>
           <p class="role">oskab urle</p>
+        </div>
+        <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxyfBS1itUma719wDxEumXs-M_I38o-FQEZA&s" class="pink alt="matterport" />
+          <h3><i>matterport</i></h3>
+          <p class="role">ei ole veel meie illegaalset konduktsiooni tuvastanud</p>
+        </div>
+        <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
+          <img src="https://real.edu.ee/wp-content/uploads/2017/12/veiko1-200x200.jpg" class="pink alt="veiko somelar" />
+          <h3><i>veiko somelar</i></h3>
+          <p class="role">põrandaplaanid ja üks väga dope (aga veits kasutu) 3d mudel</p>
+        </div>
+        <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
+          <img src="https://real.edu.ee/wp-content/uploads/2021/03/R140_w.png" class="pink alt="reaal" />
+          <h3><i>tallinna reaalkool</i></h3>
+          <p class="role">omab linki sellele photosphere'ile</p>
         </div>
         <!-- Add more member-card divs as needed -->
       </div>
@@ -224,6 +239,34 @@ a:active {
         el.style.transform = 'translateY(20px)';
         observer.observe(el);
       }); // IntersectionObserver is a modern, performant way to trigger CSS transitions on scroll :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6}
+      document.querySelectorAll('.member-card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    gsap.fromTo(card, 
+      { x: -2 },
+      {
+        x: 2,
+        duration: 0.05,
+        yoyo: true,
+        repeat: 5,
+        ease: "power1.inOut"
+      }
+    );
+  });
+});
+
+const tagline = document.querySelector('.tagline');
+const text = "proge proge proge";
+let i = 0;
+
+function type() {
+  if (i < text.length) {
+    tagline.textContent += text.charAt(i);
+    i++;
+    setTimeout(type, 100);
+  }
+}
+tagline.textContent = '';
+type();
     </script>
   </div>
 </body>
