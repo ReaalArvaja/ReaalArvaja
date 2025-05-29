@@ -29,7 +29,7 @@
   <!-- Google Font: Kalam -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
 
   <style>
     /* Reset and base */
@@ -122,29 +122,31 @@
     }
     .back-link:hover { text-decoration: underline; }
 
-    .pink { filter: sepia(0.3) hue-rotate(320deg) saturate(1.5);
+    .pink {
+  filter: sepia(0.3) hue-rotate(320deg) saturate(1.5);
+}
 
-     /* Base link color */
-  a {
-    color: #FEEFEC;            /* Blue-ish default */
-    text-decoration: none;     /* Remove underline if desired */
-  }
+/* Base link color */
+a {
+  color: #FEEFEC;            /* Blue-ish default */
+  text-decoration: none;     /* Remove underline if desired */
+}
 
-  /* Visited links */
-  a:visited {
-    color: #FEEFEC;            /* Purple after click */
-  }
+/* Visited links */
+a:visited {
+  color: #FEEFEC;            /* Purple after click */
+}
 
-  /* Hover state */
-  a:hover {
-    color: #F08080;            /* Darker blue on hover */
-    text-decoration: underline;/* Underline on hover for clarity */
-  }
+/* Hover state */
+a:hover {
+  color: #F08080;            /* Darker blue on hover */
+  text-decoration: underline;/* Underline on hover for clarity */
+}
 
-  /* Active (while pressing) */
-  a:active {
-    color: #FEEFEC;            /* Teal when active */
-  }
+/* Active (while pressing) */
+a:active {
+  color: #FEEFEC;            /* Teal when active */
+}
 
     @media (max-width: 600px) {
       .member-card { width: calc(50% - 1rem); }
@@ -175,17 +177,17 @@
       <div class="members">
         <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
           <img src="https://avatars.githubusercontent.com/u/65457878?v=4" class="pink" alt="saarmets" />
-          <h3>saarmets</h3>
+          <h3><i>saarmets</i></h3>
           <p class="role">actual progeja</p>
         </div>
         <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
           <img src="https://www.latvia.eu/uploads/2025/05/tautumeitas_8.jpg" class="pink alt="tautumeitas" />
-          <h3>tautumeitas</h3>
+          <h3><i>tautumeitas</i></h3>
           <p class="role"><a href="https://www.youtube.com/watch?v=tRTfxUJtDOs">ikooniline läti girl group</a></p>
         </div>
         <div class="member-card" data-aos="zoom-in" data-aos-delay="300">
           <img src="https://avatars.githubusercontent.com/u/204340044?v=4" class="pink alt="rionnoire" />
-          <h3>rionnoire</h3>
+          <h3><i>rionnoire</i></h3>
           <p class="role">oskab urle</p>
         </div>
         <!-- Add more member-card divs as needed -->
