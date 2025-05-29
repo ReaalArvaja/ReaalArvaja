@@ -1,356 +1,356 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>ReaalArvaja 🕵️</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Matterport SDK -->
-  <script src="https://static.matterport.com/showcase-sdk/latest.js"></script>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>ReaalArvaja 🕵️</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Matterport SDK -->
+    <script src="https://static.matterport.com/showcase-sdk/latest.js"></script>
 
-  <style>
-    /* Hide Matterport sweep points */
-    .mp-sweep-point,
-    .mp-sweep-point-circle {
-      display: none !important;
-    }
+    <style>
+      /* Hide Matterport sweep points */
+      .mp-sweep-point,
+      .mp-sweep-point-circle {
+        display: none !important;
+      }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      overflow: hidden;
-      font-family: 'Courier New', monospace;
-      background: #1a1a1a;
-      color: #00ffff;
-    }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+        background: #1a1a1a;
+        color: #00ffff;
+      }
 
-    /* HUD */
-    #hud {
-      display: flex;
-      align-items: center;
-      /* Left-align items with consistent spacing */
-      justify-content: flex-start;
-      gap: 20px;
-      width: 100%;
-      padding: 10px 20px;
-      background: rgba(0, 0, 0, 0.8);
-      position: absolute;
-      top: 0;
-      z-index: 2;
-    }
+      /* HUD */
+      #hud {
+        display: flex;
+        align-items: center;
+        /* Left-align items with consistent spacing */
+        justify-content: flex-start;
+        gap: 20px;
+        width: 100%;
+        padding: 10px 20px;
+        background: rgba(0, 0, 0, 0.8);
+        position: absolute;
+        top: 0;
+        z-index: 2;
+      }
 
-    .hud-item {
-      background: #333;
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
+      .hud-item {
+        background: #333;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
 
-    /* Push round counter left */
-    .hud-item:last-child {
-      margin-left: 20px;
-    }
+      /* Push round counter left */
+      .hud-item:last-child {
+        margin-left: 20px;
+      }
 
-    .game-container {
-      position: absolute;
-      top: 60px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      gap: 10px;
-    }
+      .game-container {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        gap: 10px;
+      }
 
-    /* Photo / Matterport */
-    #photo-container {
-      flex: 3;
-      position: relative;
-    }
+      /* Photo / Matterport */
+      #photo-container {
+        flex: 3;
+        position: relative;
+      }
 
-    #matterport-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-    }
+      #matterport-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      }
 
-    .matterport-banner {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 15%;
-      background: rgba(0, 0, 0, 1);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      z-index: 10;
-    }
+      .matterport-banner {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 15%;
+        background: rgba(0, 0, 0, 1);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        z-index: 10;
+      }
 
-    /* Map & Controls */
-    #map-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.8);
-      border-radius: 10px;
-    }
+      /* Map & Controls */
+      #map-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+      }
 
-    #map {
-      width: 100%;
-      height: 300px;
-      border: 3px solid #00ffff;
-      border-radius: 10px;
-    }
+      #map {
+        width: 100%;
+        height: 300px;
+        border: 3px solid #00ffff;
+        border-radius: 10px;
+      }
 
-    button {
-      background: #00ffff;
-      color: #000;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+      button {
+        background: #00ffff;
+        color: #000;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
 
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #00ffff;
-    }
+      button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px #00ffff;
+      }
 
-    #result {
-      font-size: 1.1em;
-      text-align: center;
-      margin-top: 10px;
-    }
-  </style>
-</head>
+      #result {
+        font-size: 1.1em;
+        text-align: center;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
 
-<body>
-  <!-- HUD -->
-  <div id="hud">
-    <div class="hud-item">🕒 Aeg: <span id="timer">30</span>s</div>
-    <div class="hud-item">🏆 Score: <span id="score">0</span></div>
-    <div class="hud-item">🔄 Round: <span id="round">1/5</span></div>
-  </div>
+  <body>
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-item">🕒 Aeg: <span id="timer">30</span>s</div>
+      <div class="hud-item">🏆 Score: <span id="score">0</span></div>
+      <div class="hud-item">🔄 Round: <span id="round">1/5</span></div>
+    </div>
 
-  <div class="game-container">
-    <!-- Matterport Tour -->
-    <div id="photo-container">
-      <iframe id="matterport-iframe" src="" frameborder="0"></iframe>
-      <div class="matterport-banner">
-        <h1>crime</h1>
-        <p><a href="{{ url_for('credits') }}">we do endorse it</a></p>
+    <div class="game-container">
+      <!-- Matterport Tour -->
+      <div id="photo-container">
+        <iframe id="matterport-iframe" src="" frameborder="0"></iframe>
+        <div class="matterport-banner">
+          <h1>crime</h1>
+          <p><a href="{{ url_for('credits') }}">we do endorse it</a></p>
+        </div>
+      </div>
+
+      <!-- Guessing Map -->
+      <div id="map-container">
+        <div id="map"></div>
+        <button id="submitGuess" disabled>🚀 Launch Guess</button>
+        <div id="result"></div>
       </div>
     </div>
 
-    <!-- Guessing Map -->
-    <div id="map-container">
-      <div id="map"></div>
-      <button id="submitGuess" disabled>🚀 Launch Guess</button>
-      <div id="result"></div>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    //---- Matterport SDK Initialization ----
-    let mpSdk;
-    window.MP_SDK
-      .connect("matterport-iframe")
-      .then((sdk) => {
-        mpSdk = sdk;
-        sdk.on(sdk.Sweep.Event.READY, () => {
-          sdk.Sweep.getAll().then((sweeps) => {
-            sweeps.forEach((s) => {
-              console.log(
-                `Sweep ${s.sid}: x=${s.position.x}, y=${
-                  s.position.y
-                }, z=${s.position.z}`
-              );
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      //---- Matterport SDK Initialization ----
+      let mpSdk;
+      window.MP_SDK
+        .connect("matterport-iframe")
+        .then((sdk) => {
+          mpSdk = sdk;
+          sdk.on(sdk.Sweep.Event.READY, () => {
+            sdk.Sweep.getAll().then((sweeps) => {
+              sweeps.forEach((s) => {
+                console.log(
+                  `Sweep ${s.sid}: x=${s.position.x}, y=${
+                    s.position.y
+                  }, z=${s.position.z}`
+                );
+              });
             });
           });
-        });
-      })
-      .catch(console.error);
+        })
+        .catch(console.error);
 
-    //---- Game Variables ----
-    const locations = [
-      { name: 'Anu Kell', coord: [1200, 800], ss: '9',   sr: '-2.58,-1.08' },
-      { name: 'Villu Raja', coord: [500, 600],  ss: '142', sr: '-0.21,-0.45' },
-      { name: 'Martin Saar', coord: [900, 200], ss: '5',   sr: '1.23,0.45' },
-      { name: 'Location 4', coord: [300, 1000], ss: '7',   sr: '2.34,-0.56' },
-      { name: 'Location 5', coord: [1600, 400], ss: '364', sr: '-0.22,-0.68' }
-    ];
+      //---- Game Variables ----
+      const locations = [
+        { name: 'Anu Kell', coord: [1200, 800], ss: '9',   sr: '-2.58,-1.08' },
+        { name: 'Villu Raja', coord: [500, 600],  ss: '142', sr: '-0.21,-0.45' },
+        { name: 'Martin Saar', coord: [900, 200], ss: '5',   sr: '1.23,0.45' },
+        { name: 'Location 4', coord: [300, 1000], ss: '7',   sr: '2.34,-0.56' },
+        { name: 'Location 5', coord: [1600, 400], ss: '364', sr: '-0.22,-0.68' }
+      ];
 
-    let score = 0;
-    let currentRound = 1;
-    let currentIndex = 0;
-    let timerInterval;
-    const totalRounds = locations.length;
+      let score = 0;
+      let currentRound = 1;
+      let currentIndex = 0;
+      let timerInterval;
+      const totalRounds = locations.length;
 
-    //---- Leaflet Map Setup ----
-    const imgWidth = 2000;
-    const imgHeight = 1500;
-    const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 2 });
-    const bounds = new L.LatLngBounds(
-      map.unproject([0, imgHeight], map.getMaxZoom()),
-      map.unproject([imgWidth, 0], map.getMaxZoom())
-    );
-    L.imageOverlay('/static/images/school_plan.jpg', bounds).addTo(map);
-    map.fitBounds(bounds);
+      //---- Leaflet Map Setup ----
+      const imgWidth = 2000;
+      const imgHeight = 1500;
+      const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 2 });
+      const bounds = new L.LatLngBounds(
+        map.unproject([0, imgHeight], map.getMaxZoom()),
+        map.unproject([imgWidth, 0], map.getMaxZoom())
+      );
+      L.imageOverlay('/static/images/school_plan.jpg', bounds).addTo(map);
+      map.fitBounds(bounds);
 
-    let guessMarker, trueMarker;
+      let guessMarker, trueMarker;
 
-    //---- Game Functions ----
-    function initializeGame() {
-      updateHUD();
-      loadLocation();
-      startTimer();
-    }
-
-    function updateHUD() {
-      document.getElementById('score').textContent = score;
-      document.getElementById(
-        'round'
-      ).textContent = `${currentRound}/${totalRounds}`;
-    }
-
-    function loadLocation() {
-      if (currentRound > totalRounds) {
-        endGame();
-        return;
+      //---- Game Functions ----
+      function initializeGame() {
+        updateHUD();
+        loadLocation();
+        startTimer();
       }
 
-      const loc = locations[currentIndex];
+      function updateHUD() {
+        document.getElementById('score').textContent = score;
+        document.getElementById(
+          'round'
+        ).textContent = `${currentRound}/${totalRounds}`;
+      }
 
-      // Clear previous markers
-      if (guessMarker) map.removeLayer(guessMarker);
-      if (trueMarker) map.removeLayer(trueMarker);
+      function loadLocation() {
+        if (currentRound > totalRounds) {
+          endGame();
+          return;
+        }
 
-      // Set true marker (hidden)
-      const trueLatLng = map.unproject(loc.coord, 0);
-      trueMarker = L.marker(trueLatLng, {
-        opacity: 0,
-        icon: L.divIcon({ html: '🎯' })
-      }).addTo(map);
+        const loc = locations[currentIndex];
 
-      // Reset UI
-      document.getElementById('result').innerHTML = '';
-      document.getElementById('submitGuess').disabled = true;
+        // Clear previous markers
+        if (guessMarker) map.removeLayer(guessMarker);
+        if (trueMarker) map.removeLayer(trueMarker);
 
-      // Load Matterport view
-      document.getElementById(
-        'matterport-iframe'
-      ).src = `https://my.matterport.com/show/?play=1&lang=en-US&m=JP9YgC9agCW&ss=${
-        loc.ss
-      }&sr=${loc.sr}&brand=0&ui_controls=0&help=0&hr=0&ts=-1&dh=0&vr=0&mls=2&f=0&fp=0&gt=0`;
+        // Set true marker (hidden)
+        const trueLatLng = map.unproject(loc.coord, 0);
+        trueMarker = L.marker(trueLatLng, {
+          opacity: 0,
+          icon: L.divIcon({ html: '🎯' })
+        }).addTo(map);
 
-      updateHUD();
-    }
+        // Reset UI
+        document.getElementById('result').innerHTML = '';
+        document.getElementById('submitGuess').disabled = true;
 
-    function startTimer() {
-      clearInterval(timerInterval);
-      let timeLeft = 30;
-      document.getElementById('timer').textContent = timeLeft;
+        // Load Matterport view
+        document.getElementById(
+          'matterport-iframe'
+        ).src = `https://my.matterport.com/show/?play=1&lang=en-US&m=JP9YgC9agCW&ss=${
+          loc.ss
+        }&sr=${loc.sr}&brand=0&ui_controls=0&help=0&hr=0&ts=-1&dh=0&vr=0&mls=2&f=0&fp=0&gt=0`;
 
-      timerInterval = setInterval(() => {
-        timeLeft--;
+        updateHUD();
+      }
+
+      function startTimer() {
+        clearInterval(timerInterval);
+        let timeLeft = 30;
         document.getElementById('timer').textContent = timeLeft;
-        if (timeLeft <= 0) handleTimeout();
-      }, 1000);
-    }
 
-    function handleTimeout() {
-      clearInterval(timerInterval);
-      document.getElementById('result').innerHTML = "⏰ Time's up!";
-      setTimeout(nextTurn, 2000);
-    }
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          document.getElementById('timer').textContent = timeLeft;
+          if (timeLeft <= 0) handleTimeout();
+        }, 1000);
+      }
 
-    function submitGuess() {
-      clearInterval(timerInterval);
+      function handleTimeout() {
+        clearInterval(timerInterval);
+        document.getElementById('result').innerHTML = "⏰ Time's up!";
+        setTimeout(nextTurn, 2000);
+      }
 
-      const guessedLatLng = guessMarker.getLatLng();
-      const distance = calculateDistance(guessedLatLng, trueMarker.getLatLng());
-      const points = Math.max(1000 - Math.floor(distance), 0);
-      score += points;
+      function submitGuess() {
+        clearInterval(timerInterval);
 
-      // Reveal true marker & draw line
-      trueMarker.setOpacity(1);
-      L.polyline([guessedLatLng, trueMarker.getLatLng()], {
-        color: 'cyan',
-        weight: 2,
-        dashArray: '5,5'
-      }).addTo(map);
+        const guessedLatLng = guessMarker.getLatLng();
+        const distance = calculateDistance(guessedLatLng, trueMarker.getLatLng());
+        const points = Math.max(1000 - Math.floor(distance), 0);
+        score += points;
 
-      // Feedback message
-      let message =
-        distance < 50
-          ? '🎉 Yippeee!'
-          : distance < 150
-          ? '🔥 Vinge!'
-          : distance < 300
-          ? '🙂 Halb'
-          : '❄️ L...';
+        // Reveal true marker & draw line
+        trueMarker.setOpacity(1);
+        L.polyline([guessedLatLng, trueMarker.getLatLng()], {
+          color: 'cyan',
+          weight: 2,
+          dashArray: '5,5'
+        }).addTo(map);
 
-      document.getElementById(
-        'result'
-      ).innerHTML = `${message}<br>+${points} pts (${Math.round(distance)}px)`;
-      document.getElementById('submitGuess').disabled = true;
+        // Feedback message
+        let message =
+          distance < 50
+            ? '🎉 Yippeee!'
+            : distance < 150
+            ? '🔥 Vinge!'
+            : distance < 300
+            ? '🙂 Halb'
+            : '❄️ L...';
 
-      setTimeout(nextTurn, 2000);
-    }
+        document.getElementById(
+          'result'
+        ).innerHTML = `${message}<br>+${points} pts (${Math.round(distance)}px)`;
+        document.getElementById('submitGuess').disabled = true;
 
-    function nextTurn() {
-      currentIndex++;
-      currentRound++;
-      map.eachLayer((layer) => {
-        if (layer instanceof L.Polyline) map.removeLayer(layer);
+        setTimeout(nextTurn, 2000);
+      }
+
+      function nextTurn() {
+        currentIndex++;
+        currentRound++;
+        map.eachLayer((layer) => {
+          if (layer instanceof L.Polyline) map.removeLayer(layer);
+        });
+        loadLocation();
+        startTimer();
+      }
+
+      function calculateDistance(a, b) {
+        const p1 = map.project(a, 0);
+        const p2 = map.project(b, 0);
+        return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      }
+
+      function endGame() {
+        clearInterval(timerInterval);
+        document.getElementById(
+          'result'
+        ).innerHTML = `Game over! You scored: ${score}`;
+        setTimeout(() => window.location.href = '/', 3000);
+      }
+
+      //---- Event Listeners ----
+      map.on('click', (e) => {
+        if (guessMarker) map.removeLayer(guessMarker);
+        guessMarker = L.marker(e.latlng, {
+          icon: L.divIcon({ html: '📍' })
+        }).addTo(map);
+
+        document.getElementById('submitGuess').disabled = false;
       });
-      loadLocation();
-      startTimer();
-    }
 
-    function calculateDistance(a, b) {
-      const p1 = map.project(a, 0);
-      const p2 = map.project(b, 0);
-      return Math.hypot(p1.x - p2.x, p1.y - p2.y);
-    }
+      document
+        .getElementById('submitGuess')
+        .addEventListener('click', submitGuess);
 
-    function endGame() {
-      clearInterval(timerInterval);
-      document.getElementById(
-        'result'
-      ).innerHTML = `Game over! You scored: ${score}`;
-      setTimeout(() => window.location.href = '/', 3000);
-    }
-
-    //---- Event Listeners ----
-    map.on('click', (e) => {
-      if (guessMarker) map.removeLayer(guessMarker);
-      guessMarker = L.marker(e.latlng, {
-        icon: L.divIcon({ html: '📍' })
-      }).addTo(map);
-
-      document.getElementById('submitGuess').disabled = false;
-    });
-
-    document
-      .getElementById('submitGuess')
-      .addEventListener('click', submitGuess);
-
-    //---- Start Game ----
-    initializeGame();
-  </script>
-</body>
-</html>
+      //---- Start Game ----
+      initializeGame();
+    </script>
+  </body>
+  </html>
