@@ -460,14 +460,19 @@
         return;
       }
 
-      // Floor is correct → compute distance‐based points
+      // Floor is correct → compute distance‐based points with extra tolerance
       const guessedLatLng = guessMarker.getLatLng();
-
       document.getElementById('floorSelect').value = loc.floor;
       updateMapOverlay();
 
       const distance = calculateDistance(guessedLatLng, trueMarker.getLatLng());
-      const points = Math.max(1000 - Math.floor(distance), 0);
+      let points;
+      // If within 30, award full 1000 points
+      if (distance < 30) {
+        points = 1000;
+      } else {
+        points = Math.max(1000 - Math.floor(distance), 0);
+      }
       score += points;
 
       trueMarker.setOpacity(1);
