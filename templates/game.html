@@ -44,6 +44,7 @@
       padding: 10px 20px;
       border-radius: 8px;
       text-align: center;
+      font-size: 1rem;
     }
 
     .hud-item:last-child {
@@ -131,6 +132,26 @@
       border-radius: 10px;
     }
 
+    /* Custom guess-marker style */
+    .guess-marker {
+      width: 18px;
+      height: 18px;
+      background: #ff00ff;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+    }
+
+    /* Custom true-marker style */
+    .true-marker {
+      width: 22px;
+      height: 22px;
+      background: #00ff00;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+    }
+
     /* Submit button styling */
     #submitGuess {
       background: #00ffff;
@@ -165,6 +186,30 @@
       color: #00ff00;
       overflow-y: auto;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Back-to-home button at end */
+    #backHome {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      margin-top: 10px;
+      width: 80%;
+      align-self: center;
+      display: none; /* hidden until game over */
+    }
+
+    #backHome:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
     }
   </style>
 </head>
@@ -201,6 +246,7 @@
       <div id="map"></div>
       <button id="submitGuess" disabled>🚀 Launch Guess</button>
       <div id="result"></div>
+      <button id="backHome">🏠 Back to Home</button>
     </div>
   </div>
 
@@ -216,9 +262,7 @@
         sdk.on(sdk.Sweep.Event.READY, () => {
           sdk.Sweep.getAll().then((sweeps) => {
             sweeps.forEach((s) => {
-              console.log(
-                `Sweep ${s.sid}: x=${s.position.x}, y=${s.position.y}, z=${s.position.z}`
-              );
+              console.log(`Sweep ${s.sid}: x=${s.position.x}, y=${s.position.y}, z=${s.position.z}`);
             });
           });
         });
@@ -227,7 +271,6 @@
 
     //---- Game Variables ----
     const locations = [
-      // New locations array (10 total entries):
       { floor: '1', coord: [251, 761],  ss: '1',   sr: '0.00,0.00' },
       { floor: '1', coord: [559, 489],  ss: '23',  sr: '0.00,0.00' },
       { floor: '1', coord: [668, 555],  ss: '15',  sr: '0.00,0.00' },
@@ -236,8 +279,8 @@
       { floor: '0', coord: [868, 1023], ss: '142', sr: '0.00,0.00' },
       { floor: '1', coord: [292, 667],  ss: '5',   sr: '0.00,0.00' },
       { floor: '3', coord: [1395, 158], ss: '279', sr: '0.00,0.00' },
-      { floor: '1', coord: [463, 281],  ss: '364', sr: '0.00,0.00' },  /* ← Added missing comma */
-      { floor: '2', coord: [1422, 585], ss: '213', sr: '0.00,0.00' }
+      { floor: '1', coord: [463, 281],  ss: '364', sr: '0.00,0.00' },
+      { floor: '2', coord: [1422, 585], ss: '199', sr: '0.00,0.00' }
     ];
 
     let score = 0;
@@ -245,7 +288,7 @@
     let currentIndex = 0;
     let timerInterval;
 
-    // Exactly 5 random locations per game (out of these 10)
+    // Exactly 5 random locations per game
     const totalRounds = 5;
     let gameLocations = [];
 
@@ -253,54 +296,51 @@
     const imgWidth = 2000;
     const imgHeight = 1500;
 
-    // Create Leaflet map with a simple CRS so 1px = 1 map unit
+    // Create the Leaflet map with a simple CRS (1px = 1 unit)
     const map = L.map('map', {
       crs: L.CRS.Simple,
       minZoom: -2,
       maxZoom: 2
     });
 
-    // Define the image bounds at zoom=0 matching 2000×1500 px
+    // Define the bounds of the 2000×1500 image at zoom=0
     const bounds = new L.LatLngBounds(
       map.unproject([0, imgHeight], 0),
       map.unproject([imgWidth, 0], 0)
     );
 
-    // Keep track of current floor overlay (so we can swap it out)
+    // Keep track of the current floor overlay layer
     let baseLayer = null;
 
-    // Markers for user guess and true location
+    // Markers for the player's guess and the hidden true location
     let guessMarker = null;
     let trueMarker = null;
 
-    // On map click, place (or move) the guess marker
+    // When the user clicks on the map, place (or move) their guess marker
     map.on('click', (e) => {
       if (guessMarker) {
         map.removeLayer(guessMarker);
       }
+      // Use a divIcon with custom CSS class for prettier marker
       guessMarker = L.marker(e.latlng, {
-        icon: L.divIcon({ html: '📍' })
+        icon: L.divIcon({ className: 'guess-marker' })
       }).addTo(map);
-
       document.getElementById('submitGuess').disabled = false;
     });
 
-    // Swap the floor‐overlay based on dropdown selection
+    // Swap out the floor overlay whenever the dropdown changes
     function updateMapOverlay() {
       const selectedFloor = document.getElementById('floorSelect').value;
       if (baseLayer) {
         map.removeLayer(baseLayer);
       }
-      baseLayer = L.imageOverlay(
-        `/static/images/floor${selectedFloor}.jpg`,
-        bounds
-      ).addTo(map);
+      baseLayer = L.imageOverlay(`/static/images/floor${selectedFloor}.jpg`, bounds).addTo(map);
       map.fitBounds(bounds);
     }
 
     //---- Game Logic Functions ----
 
-    // Fisher–Yates shuffle to randomize an array
+    // Fisher–Yates shuffle to randomize an array in place
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -324,16 +364,17 @@
       startTimer();
     }
 
-    // Update HUD (score & round)
+    // Update the HUD (score & round)
     function updateHUD() {
       document.getElementById('score').textContent = score;
       document.getElementById('round').textContent = `${currentRound}/${totalRounds}`;
     }
 
-    // Load Matterport view & set up the map for current location
+    // Load Matterport view & set up the map for the current location
     function loadLocation() {
+      // If we’ve completed all rounds, show end‐of‐game summary
       if (currentRound > totalRounds) {
-        endGame();
+        showGameOver();
         return;
       }
 
@@ -358,7 +399,7 @@
       const trueLatLng = map.unproject(loc.coord, 0);
       trueMarker = L.marker(trueLatLng, {
         opacity: 0,
-        icon: L.divIcon({ html: '🎯', className: '' })
+        icon: L.divIcon({ className: 'true-marker' })
       }).addTo(map);
 
       // Reset UI: clear result text, disable submit button
@@ -397,7 +438,7 @@
       return Math.hypot(p1.x - p2.x, p1.y - p2.y);
     }
 
-    // Called when player clicks “Launch Guess”
+    // Called when the player clicks “Launch Guess”
     function submitGuess() {
       clearInterval(timerInterval);
 
@@ -412,9 +453,10 @@
         trueMarker.setOpacity(1);
         document.getElementById('result').innerHTML =
           "❌ Vale korrus! Õige korrus näidatud.<br>+0 pts";
-        document.getElementById('submitGuess').disabled = true;
 
-        setTimeout(nextTurn, 2000);
+        document.getElementById('submitGuess').disabled = true;
+        // Wait 4 seconds so the user can see the true marker
+        setTimeout(nextTurn, 4000);
         return;
       }
 
@@ -429,6 +471,7 @@
       score += points;
 
       trueMarker.setOpacity(1);
+      // Draw a cyan line from guess to truth
       L.polyline([guessedLatLng, trueMarker.getLatLng()], {
         color: 'cyan',
         weight: 2,
@@ -449,10 +492,11 @@
       ).innerHTML = `${message}<br>+${points} pts (${Math.round(distance)}px)`;
       document.getElementById('submitGuess').disabled = true;
 
+      // Wait 2 seconds after a correct guess, then next round
       setTimeout(nextTurn, 2000);
     }
 
-    // Advance to the next round (or end if done)
+    // Advance to the next round (or show summary if done)
     function nextTurn() {
       currentIndex++;
       currentRound++;
@@ -460,25 +504,45 @@
       startTimer();
     }
 
-    // When the game is over, show final score and redirect
-    function endGame() {
+    // Display the end‐of‐game summary instead of redirecting immediately
+    function showGameOver() {
       clearInterval(timerInterval);
+
+      // Compute max possible: 1000 × totalRounds
+      const maxPossible = 1000 * totalRounds;
       document.getElementById(
         'result'
-      ).innerHTML = `Mäng läbi! Sinu tulemus: ${score}`;
-      setTimeout(() => (window.location.href = '/'), 3000);
+      ).innerHTML = `🏁 Mäng läbi! Sinu tulemus: ${score} / ${maxPossible} pts`;
+
+      // Reveal the “Back to Home” button
+      const btn = document.getElementById('backHome');
+      btn.style.display = 'block';
+      btn.addEventListener('click', () => {
+        window.location.href = '/';
+      });
+    }
+
+    // Handle timeout (no guess before timer hits 0)
+    function handleTimeout() {
+      clearInterval(timerInterval);
+      document.getElementById('result').innerHTML = "⏰ Aeg otsas!<br>+0 pts";
+
+      // Reveal the true location immediately (keep user on correct floor)
+      const loc = gameLocations[currentIndex];
+      document.getElementById('floorSelect').value = loc.floor;
+      updateMapOverlay();
+      trueMarker.setOpacity(1);
+
+      // Wait 4 seconds so they can see true marker, then next round
+      setTimeout(nextTurn, 4000);
     }
 
     //---- Event Listeners ----
-    document
-      .getElementById('submitGuess')
-      .addEventListener('click', submitGuess);
-    document
-      .getElementById('floorSelect')
-      .addEventListener('change', updateMapOverlay);
+    document.getElementById('submitGuess').addEventListener('click', submitGuess);
+    document.getElementById('floorSelect').addEventListener('change', updateMapOverlay);
 
     //---- Start Game ----
-    // Initialize overlay to Floor 0 before the first location loads
+    // Initialize overlay to Floor 0 before loading the first location
     updateMapOverlay();
     initializeGame();
   </script>
