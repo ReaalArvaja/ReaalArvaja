@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8" />
+  <title>404 – Lehekülg Ei Löödunud</title>
+  <style>
+    /* Base styling to match the cyber‐neon theme */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      background: #291720;
+      color: #D90368;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Grid lines overlay (subtle neon) */
+    .grid-lines {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(90deg, rgba(217,3,104,0.15) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(217,3,104,0.15) 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: 1;
+    }
+
+    /* Scanning red line effect */
+    .scan-line {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        transparent 50%,
+        #D90368 51%,
+        transparent 52%
+      );
+      animation: scan 6s linear infinite;
+      z-index: 1;
+      opacity: 0.25;
+    }
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    /* Central container for the 404 message */
+    .error-container {
+      position: relative;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.7);
+      border: 3px solid #D90368;
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(217, 3, 104, 0.6);
+    }
+
+    .error-container h1 {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px #D90368;
+      animation: glow 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #D90368;
+      }
+      to {
+        text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
+      }
+    }
+
+    .error-container p {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .home-link {
+      display: inline-block;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      color: #291720;
+      background: #D90368;
+      border: 2px solid #D90368;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      position: relative;
+    }
+    .home-link:hover {
+      background: transparent;
+      color: #D90368;
+      box-shadow: 0 0 20px #D90368;
+      transform: scale(1.05);
+    }
+    .home-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #D90368,
+        transparent
+      );
+      transition: 0.5s;
+    }
+    .home-link:hover::before {
+      left: 100%;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .error-container {
+        padding: 1.5rem 1.5rem;
+      }
+      .error-container h1 {
+        font-size: 3.5rem;
+      }
+      .error-container p {
+        font-size: 1rem;
+      }
+      .home-link {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-lines"></div>
+  <div class="scan-line"></div>
+
+  <div class="error-container">
+    <h1>404</h1>
+    <p>Ups! Lehekülge ei leitud.</p>
+    <a href="{{ url_for('index') }}" class="home-link">🏠 Tagasi Avalehele</a>
+  </div>
+</body>
+</html>
