@@ -1,360 +1,486 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>ReaalArvaja 🕵️</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <!-- Matterport SDK -->
-    <script src="https://static.matterport.com/showcase-sdk/latest.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ReaalArvaja 🕵️</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Matterport SDK -->
+  <script src="https://static.matterport.com/showcase-sdk/latest.js"></script>
 
-    <style>
-      /* Hide Matterport sweep points */
-      .mp-sweep-point,
-      .mp-sweep-point-circle {
-        display: none !important;
-      }
+  <style>
+    /* Hide Matterport sweep points */
+    .mp-sweep-point,
+    .mp-sweep-point-circle {
+      display: none !important;
+    }
 
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        overflow: hidden;
-        font-family: 'Courier New', monospace;
-        background: #1a1a1a;
-        color: #00ffff;
-      }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #00ffff;
+    }
 
-      /* HUD */
-      #hud {
-        display: flex;
-        align-items: center;
-        /* Left-align items with consistent spacing */
-        justify-content: flex-start;
-        gap: 20px;
-        width: 100%;
-        padding: 10px 20px;
-        background: rgba(0, 0, 0, 0.8);
-        position: absolute;
-        top: 0;
-        z-index: 2;
-      }
+    /* HUD */
+    #hud {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+      width: 100%;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.8);
+      position: absolute;
+      top: 0;
+      z-index: 2;
+    }
 
-      .hud-item {
-        background: #333;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-align: center;
-      }
+    .hud-item {
+      background: #333;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
 
-      /* Push round counter left */
-      .hud-item:last-child {
-        margin-left: 20px;
-      }
+    .hud-item:last-child {
+      margin-left: 20px;
+    }
 
-      .game-container {
-        position: absolute;
-        top: 60px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        gap: 10px;
-      }
+    .game-container {
+      position: absolute;
+      top: 60px; /* leave space for HUD */
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      gap: 10px;
+    }
 
-      /* Photo / Matterport */
-      #photo-container {
-        flex: 3;
-        position: relative;
-      }
+    /* Photo / Matterport */
+    #photo-container {
+      flex: 3;
+      position: relative;
+    }
 
-      #matterport-iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-      }
+    #matterport-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
 
-      .matterport-banner {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 15%;
-        background: rgba(0, 0, 0, 1);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        z-index: 10;
-      }
+    .matterport-banner {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 15%;
+      background: rgba(0, 0, 0, 1);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 10;
+    }
 
-      /* Map & Controls */
-      #map-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.8);
-        border-radius: 10px;
-      }
+    /* Map & Controls */
+    #map-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 10px;
+      height: 100%;
+      box-sizing: border-box;
+    }
 
-      #map {
-        width: 100%;
-        height: 300px;
-        border: 3px solid #00ffff;
-        border-radius: 10px;
-      }
+    /* Floor selector */
+    #floorSelect {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-bottom: 5px;
+      width: 100%;
+      max-width: 200px;
+    }
 
-      button {
-        background: #00ffff;
-        color: #000;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: transform 0.2s, box-shadow 0.2s;
-      }
+    #floorSelect:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
 
-      button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 15px #00ffff;
-      }
+    /* Map takes about 60% of container height */
+    #map {
+      width: 100%;
+      height: 60%;
+      border: 3px solid #00ffff;
+      border-radius: 10px;
+    }
 
-      #result {
-        font-size: 1.1em;
-        text-align: center;
-        margin-top: 10px;
-      }
-    </style>
-  </head>
+    /* Submit button styling */
+    #submitGuess {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 10px;
+      width: 100%;
+      max-width: 200px;
+    }
 
-  <body>
-    <!-- HUD -->
-    <div id="hud">
-      <div class="hud-item">🕒 Aeg: <span id="timer">30</span>s</div>
-      <div class="hud-item">🏆 Score: <span id="score">0</span></div>
-      <div class="hud-item">🔄 Round: <span id="round">1/5</span></div>
+    #submitGuess:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
+
+    /* Result/feedback area takes about 30% of container height */
+    #result {
+      width: 100%;
+      height: 30%;
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 1.2em;
+      text-align: center;
+      color: #00ff00;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-item">🕒 Aeg: <span id="timer">30</span>s</div>
+    <div class="hud-item">🏆 Score: <span id="score">0</span></div>
+    <div class="hud-item">🔄 Round: <span id="round">1/5</span></div>
+  </div>
+
+  <div class="game-container">
+    <!-- Matterport Tour -->
+    <div id="photo-container">
+      <iframe id="matterport-iframe" src="" frameborder="0"></iframe>
+      <div class="matterport-banner">
+        <h1>crime</h1>
+        <p><a href="{{ url_for('credits') }}">we do endorse it</a></p>
+      </div>
     </div>
 
-    <div class="game-container">
-      <!-- Matterport Tour -->
-      <div id="photo-container">
-        <iframe id="matterport-iframe" src="" frameborder="0"></iframe>
-        <div class="matterport-banner">
-          <h1>crime</h1>
-          <p><a href="{{ url_for('credits') }}">we do endorse it</a></p>
-        </div>
-      </div>
+    <!-- Guessing Map -->
+    <div id="map-container">
+      <!-- Floor selector -->
+      <select id="floorSelect">
+        <option value="0">Floor 0</option>
+        <option value="1">Floor 1</option>
+        <option value="2">Floor 2</option>
+        <option value="3">Floor 3</option>
+        <option value="4">Floor 4</option>
+      </select>
 
-      <!-- Guessing Map -->
-      <div id="map-container">
-        <div id="map"></div>
-        <button id="submitGuess" disabled>🚀 Launch Guess</button>
-        <div id="result"></div>
-      </div>
+      <div id="map"></div>
+      <button id="submitGuess" disabled>🚀 Launch Guess</button>
+      <div id="result"></div>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-      //---- Matterport SDK Initialization ----
-      let mpSdk;
-      window.MP_SDK
-        .connect("matterport-iframe")
-        .then((sdk) => {
-          mpSdk = sdk;
-          sdk.on(sdk.Sweep.Event.READY, () => {
-            sdk.Sweep.getAll().then((sweeps) => {
-              sweeps.forEach((s) => {
-                console.log(
-                  `Sweep ${s.sid}: x=${s.position.x}, y=${
-                    s.position.y
-                  }, z=${s.position.z}`
-                );
-              });
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    //---- Matterport SDK Initialization ----
+    let mpSdk;
+    window.MP_SDK
+      .connect("matterport-iframe")
+      .then((sdk) => {
+        mpSdk = sdk;
+        sdk.on(sdk.Sweep.Event.READY, () => {
+          sdk.Sweep.getAll().then((sweeps) => {
+            sweeps.forEach((s) => {
+              console.log(
+                `Sweep ${s.sid}: x=${s.position.x}, y=${s.position.y}, z=${s.position.z}`
+              );
             });
           });
-        })
-        .catch(console.error);
-
-      //---- Game Variables ----
-      const locations = [ // Example locations with coordinates, ss (sweep state), and sr (sweep rotation)
-        { floor: '0', coord: [1000, 500],  ss: '1',   sr: '0.00,0.00' },
-        { floor: '1', coord: [700, 300],  ss: '23',  sr: '-1.23,-0.45' },
-        { floor: '2', coord: [400, 900],  ss: '15',  sr: '0.56,1.12' },
-        { floor: '3', coord: [1200, 600], ss: '88',  sr: '-0.78,-1.34' },
-        { floor: '0', coord: [1200, 800], ss: '9',   sr: '-2.58,-1.08' },
-        { floor: '1', coord: [500, 600],  ss: '142', sr: '-0.21,-0.45' },
-        { floor: '2', coord: [900, 200], ss: '5',   sr: '1.23,0.45' },
-        { floor: '3', coord: [300, 1000], ss: '7',   sr: '2.34,-0.56' },
-        { floor: '4', coord: [1600, 400], ss: '364', sr: '-0.22,-0.68' }
-      ];
-
-      let score = 0;
-      let currentRound = 1;
-      let currentIndex = 0;
-      let timerInterval;
-      const totalRounds = locations.length;
-
-      //---- Leaflet Map Setup ----
-      const imgWidth = 2000;
-      const imgHeight = 1500;
-      const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 2 });
-      const bounds = new L.LatLngBounds(
-        map.unproject([0, imgHeight], map.getMaxZoom()),
-        map.unproject([imgWidth, 0], map.getMaxZoom())
-      );
-      L.imageOverlay('/static/images/school_plan.jpg', bounds).addTo(map);
-      map.fitBounds(bounds);
-
-      let guessMarker, trueMarker;
-
-      //---- Game Functions ----
-      function initializeGame() {
-        updateHUD();
-        loadLocation();
-        startTimer();
-      }
-
-      function updateHUD() {
-        document.getElementById('score').textContent = score;
-        document.getElementById(
-          'round'
-        ).textContent = `${currentRound}/${totalRounds}`;
-      }
-
-      function loadLocation() {
-        if (currentRound > totalRounds) {
-          endGame();
-          return;
-        }
-
-        const loc = locations[currentIndex];
-
-        // Clear previous markers
-        if (guessMarker) map.removeLayer(guessMarker);
-        if (trueMarker) map.removeLayer(trueMarker);
-
-        // Set true marker (hidden)
-        const trueLatLng = map.unproject(loc.coord, 0);
-        trueMarker = L.marker(trueLatLng, {
-          opacity: 0,
-          icon: L.divIcon({ html: '🎯' })
-        }).addTo(map);
-
-        // Reset UI
-        document.getElementById('result').innerHTML = '';
-        document.getElementById('submitGuess').disabled = true;
-
-        // Load Matterport view
-        document.getElementById(
-          'matterport-iframe'
-        ).src = `https://my.matterport.com/show/?play=1&lang=en-US&m=JP9YgC9agCW&ss=${
-          loc.ss
-        }&sr=${loc.sr}&brand=0&ui_controls=0&help=0&hr=0&ts=-1&dh=0&vr=0&mls=2&f=0&fp=0&gt=0`;
-
-        updateHUD();
-      }
-
-      function startTimer() {
-        clearInterval(timerInterval);
-        let timeLeft = 30;
-        document.getElementById('timer').textContent = timeLeft;
-
-        timerInterval = setInterval(() => {
-          timeLeft--;
-          document.getElementById('timer').textContent = timeLeft;
-          if (timeLeft <= 0) handleTimeout();
-        }, 1000);
-      }
-
-      function handleTimeout() {
-        clearInterval(timerInterval);
-        document.getElementById('result').innerHTML = "⏰ Time's up!";
-        setTimeout(nextTurn, 2000);
-      }
-
-      function submitGuess() {
-        clearInterval(timerInterval);
-
-        const guessedLatLng = guessMarker.getLatLng();
-        const distance = calculateDistance(guessedLatLng, trueMarker.getLatLng());
-        const points = Math.max(1000 - Math.floor(distance), 0);
-        score += points;
-
-        // Reveal true marker & draw line
-        trueMarker.setOpacity(1);
-        L.polyline([guessedLatLng, trueMarker.getLatLng()], {
-          color: 'cyan',
-          weight: 2,
-          dashArray: '5,5'
-        }).addTo(map);
-
-        // Feedback message
-        let message =
-          distance < 50
-            ? '🎉 Yippeee!'
-            : distance < 150
-            ? '🔥 Vinge!'
-            : distance < 300
-            ? '🙂 Halb'
-            : '❄️ L...';
-
-        document.getElementById(
-          'result'
-        ).innerHTML = `${message}<br>+${points} pts (${Math.round(distance)}px)`;
-        document.getElementById('submitGuess').disabled = true;
-
-        setTimeout(nextTurn, 2000);
-      }
-
-      function nextTurn() {
-        currentIndex++;
-        currentRound++;
-        map.eachLayer((layer) => {
-          if (layer instanceof L.Polyline) map.removeLayer(layer);
         });
-        loadLocation();
-        startTimer();
+      })
+      .catch(console.error);
+
+    //---- Game Variables ----
+    const locations = [
+      // New locations array (10 total entries):
+      { floor: '1', coord: [251, 761],  ss: '1',   sr: '0.00,0.00' },
+      { floor: '1', coord: [559, 489],  ss: '23',  sr: '0.00,0.00' },
+      { floor: '1', coord: [668, 555],  ss: '15',  sr: '0.00,0.00' },
+      { floor: '0', coord: [366, 713],  ss: '88',  sr: '0.00,0.00' },
+      { floor: '1', coord: [537, 774],  ss: '9',   sr: '0.00,0.00' },
+      { floor: '0', coord: [868, 1023], ss: '142', sr: '0.00,0.00' },
+      { floor: '1', coord: [292, 667],  ss: '5',   sr: '0.00,0.00' },
+      { floor: '3', coord: [1395, 158], ss: '279', sr: '0.00,0.00' },
+      { floor: '1', coord: [463, 281],  ss: '364', sr: '0.00,0.00' },  /* ← Added missing comma */
+      { floor: '2', coord: [1422, 585], ss: '213', sr: '0.00,0.00' }
+    ];
+
+    let score = 0;
+    let currentRound = 1;
+    let currentIndex = 0;
+    let timerInterval;
+
+    // Exactly 5 random locations per game (out of these 10)
+    const totalRounds = 5;
+    let gameLocations = [];
+
+    //---- Leaflet Map Setup ----
+    const imgWidth = 2000;
+    const imgHeight = 1500;
+
+    // Create Leaflet map with a simple CRS so 1px = 1 map unit
+    const map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: -2,
+      maxZoom: 2
+    });
+
+    // Define the image bounds at zoom=0 matching 2000×1500 px
+    const bounds = new L.LatLngBounds(
+      map.unproject([0, imgHeight], 0),
+      map.unproject([imgWidth, 0], 0)
+    );
+
+    // Keep track of current floor overlay (so we can swap it out)
+    let baseLayer = null;
+
+    // Markers for user guess and true location
+    let guessMarker = null;
+    let trueMarker = null;
+
+    // On map click, place (or move) the guess marker
+    map.on('click', (e) => {
+      if (guessMarker) {
+        map.removeLayer(guessMarker);
+      }
+      guessMarker = L.marker(e.latlng, {
+        icon: L.divIcon({ html: '📍' })
+      }).addTo(map);
+
+      document.getElementById('submitGuess').disabled = false;
+    });
+
+    // Swap the floor‐overlay based on dropdown selection
+    function updateMapOverlay() {
+      const selectedFloor = document.getElementById('floorSelect').value;
+      if (baseLayer) {
+        map.removeLayer(baseLayer);
+      }
+      baseLayer = L.imageOverlay(
+        `/static/images/floor${selectedFloor}.jpg`,
+        bounds
+      ).addTo(map);
+      map.fitBounds(bounds);
+    }
+
+    //---- Game Logic Functions ----
+
+    // Fisher–Yates shuffle to randomize an array
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Pick exactly 5 random locations from the 10
+    function pickRandomLocations() {
+      const copy = locations.slice(); // shallow copy
+      shuffle(copy);
+      gameLocations = copy.slice(0, totalRounds);
+    }
+
+    // Initialize game state & start the first round
+    function initializeGame() {
+      pickRandomLocations();
+      updateHUD();
+      loadLocation();
+      startTimer();
+    }
+
+    // Update HUD (score & round)
+    function updateHUD() {
+      document.getElementById('score').textContent = score;
+      document.getElementById('round').textContent = `${currentRound}/${totalRounds}`;
+    }
+
+    // Load Matterport view & set up the map for current location
+    function loadLocation() {
+      if (currentRound > totalRounds) {
+        endGame();
+        return;
       }
 
-      function calculateDistance(a, b) {
-        const p1 = map.project(a, 0);
-        const p2 = map.project(b, 0);
-        return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      const loc = gameLocations[currentIndex];
+
+      // Remove any old guess marker or polyline
+      if (guessMarker) {
+        map.removeLayer(guessMarker);
+        guessMarker = null;
       }
-
-      function endGame() {
-        clearInterval(timerInterval);
-        document.getElementById(
-          'result'
-        ).innerHTML = `Game over! You scored: ${score}`;
-        setTimeout(() => window.location.href = '/', 3000);
+      if (trueMarker) {
+        map.removeLayer(trueMarker);
+        trueMarker = null;
       }
-
-      //---- Event Listeners ----
-      map.on('click', (e) => {
-        if (guessMarker) map.removeLayer(guessMarker);
-        guessMarker = L.marker(e.latlng, {
-          icon: L.divIcon({ html: '📍' })
-        }).addTo(map);
-
-        document.getElementById('submitGuess').disabled = false;
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Polyline) {
+          map.removeLayer(layer);
+        }
       });
 
-      document
-        .getElementById('submitGuess')
-        .addEventListener('click', submitGuess);
+      // Place hidden true‐location marker using pixel coords at zoom=0
+      const trueLatLng = map.unproject(loc.coord, 0);
+      trueMarker = L.marker(trueLatLng, {
+        opacity: 0,
+        icon: L.divIcon({ html: '🎯', className: '' })
+      }).addTo(map);
 
-      //---- Start Game ----
-      initializeGame();
-    </script>
-  </body>
-  </html>
+      // Reset UI: clear result text, disable submit button
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('submitGuess').disabled = true;
+
+      // Load Matterport iframe with this location’s sweep state (ss & sr)
+      document.getElementById(
+        'matterport-iframe'
+      ).src = `https://my.matterport.com/show/?play=1&lang=en-US&m=JP9YgC9agCW&ss=${loc.ss}&sr=${loc.sr}&brand=0&ui_controls=0&help=0&hr=0&ts=-1&dh=0&vr=0&mls=2&f=0&fp=0&gt=0`;
+
+      // Reset floor dropdown to 0 at the start of each round
+      document.getElementById('floorSelect').value = '0';
+      updateMapOverlay();
+
+      updateHUD();
+    }
+
+    // Start or reset the 30‐second timer for this round
+    function startTimer() {
+      clearInterval(timerInterval);
+      let timeLeft = 30;
+      document.getElementById('timer').textContent = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = timeLeft;
+        if (timeLeft <= 0) handleTimeout();
+      }, 1000);
+    }
+
+    // Compute Euclidean distance (in pixels) between two LatLngs on our simple CRS
+    function calculateDistance(a, b) {
+      const p1 = map.project(a, 0);
+      const p2 = map.project(b, 0);
+      return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    }
+
+    // Called when player clicks “Launch Guess”
+    function submitGuess() {
+      clearInterval(timerInterval);
+
+      const loc = gameLocations[currentIndex];
+      const guessedFloor = document.getElementById('floorSelect').value;
+
+      // If floor is incorrect, show 0 points and reveal on correct floor
+      if (guessedFloor !== loc.floor) {
+        document.getElementById('floorSelect').value = loc.floor;
+        updateMapOverlay();
+
+        trueMarker.setOpacity(1);
+        document.getElementById('result').innerHTML =
+          "❌ Vale korrus! Õige korrus näidatud.<br>+0 pts";
+        document.getElementById('submitGuess').disabled = true;
+
+        setTimeout(nextTurn, 2000);
+        return;
+      }
+
+      // Floor is correct → compute distance‐based points
+      const guessedLatLng = guessMarker.getLatLng();
+
+      document.getElementById('floorSelect').value = loc.floor;
+      updateMapOverlay();
+
+      const distance = calculateDistance(guessedLatLng, trueMarker.getLatLng());
+      const points = Math.max(1000 - Math.floor(distance), 0);
+      score += points;
+
+      trueMarker.setOpacity(1);
+      L.polyline([guessedLatLng, trueMarker.getLatLng()], {
+        color: 'cyan',
+        weight: 2,
+        dashArray: '5,5'
+      }).addTo(map);
+
+      let message =
+        distance < 50
+          ? '🎉 Vinge!'
+          : distance < 150
+          ? '🔥 Tubli!'
+          : distance < 300
+          ? '🙂 Peaaegu!'
+          : '❄️ Lame!';
+
+      document.getElementById(
+        'result'
+      ).innerHTML = `${message}<br>+${points} pts (${Math.round(distance)}px)`;
+      document.getElementById('submitGuess').disabled = true;
+
+      setTimeout(nextTurn, 2000);
+    }
+
+    // Advance to the next round (or end if done)
+    function nextTurn() {
+      currentIndex++;
+      currentRound++;
+      loadLocation();
+      startTimer();
+    }
+
+    // When the game is over, show final score and redirect
+    function endGame() {
+      clearInterval(timerInterval);
+      document.getElementById(
+        'result'
+      ).innerHTML = `Mäng läbi! Sinu tulemus: ${score}`;
+      setTimeout(() => (window.location.href = '/'), 3000);
+    }
+
+    //---- Event Listeners ----
+    document
+      .getElementById('submitGuess')
+      .addEventListener('click', submitGuess);
+    document
+      .getElementById('floorSelect')
+      .addEventListener('change', updateMapOverlay);
+
+    //---- Start Game ----
+    // Initialize overlay to Floor 0 before the first location loads
+    updateMapOverlay();
+    initializeGame();
+  </script>
+</body>
+</html>
