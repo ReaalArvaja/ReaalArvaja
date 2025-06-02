@@ -13,16 +13,16 @@
     integrity="sha512-Kc+nZCAiYhk/AmY/VlYzqoRYWP27E7m75lI2ISt55lq6B3aIBCizr4oF5Q0XDc6EOK4ajMi8mskNi1hF5df0Fg=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
-  /> <!-- Animate.css is a ready-to-use CSS animations library :contentReference[oaicite:0]{index=0} -->
+  /> <!-- Animate.css is a ready-to-use CSS animations library -->
 
   <!-- 2) AOS (Animate On Scroll) -->
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script> <!-- AOS gives you CSS-driven scroll animations without inline styles :contentReference[oaicite:1]{index=1} -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script> <!-- AOS gives you CSS-driven scroll animations without inline styles -->
 
   <!-- 3) GSAP core -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
     integrity="sha512-5SoUoQ3Jelvj89ZFv3nY6Cfrb/5KbFFDTNyWW6QIKYjM2Z+JudSN0ZBQCk+kISoF1ZvQ3Em4+4IZCA9uUAyuiA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script> <!-- GSAP for high-performance, timeline-based JS animations :contentReference[oaicite:2]{index=2} -->
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script> <!-- GSAP for high-performance, timeline-based JS animations -->
 
   <title>meie</title>
 
@@ -213,7 +213,7 @@ a:active {
 
     <script>
       // Initialize AOS
-      AOS.init({ once: true, offset: 100 }); // only animate once when scrolled into view :contentReference[oaicite:3]{index=3}
+      AOS.init({ once: true, offset: 100 }); // only animate once when scrolled into view
   
       // GSAP hover-scale on .member-card
       document.querySelectorAll('.member-card').forEach(card => {
@@ -238,7 +238,7 @@ a:active {
       items.forEach(el => {
         el.style.transform = 'translateY(20px)';
         observer.observe(el);
-      }); // IntersectionObserver is a modern, performant way to trigger CSS transitions on scroll :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6}
+      }); // IntersectionObserver is a modern, performant way to trigger CSS transitions on scroll
       document.querySelectorAll('.member-card').forEach(card => {
   card.addEventListener('mouseenter', () => {
     gsap.fromTo(card, 
