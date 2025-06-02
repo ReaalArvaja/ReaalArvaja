@@ -218,7 +218,7 @@
   <!-- HUD -->
   <div id="hud">
     <div class="hud-item">🕒 Aeg: <span id="timer">30</span>s</div>
-    <div class="hud-item">🏆 Score: <span id="score">0</span></div>
+    <div class="hud-item">🏆 Punktid: <span id="score">0</span></div>
     <div class="hud-item">🔄 Round: <span id="round">1/5</span></div>
   </div>
 
@@ -236,17 +236,17 @@
     <div id="map-container">
       <!-- Floor selector -->
       <select id="floorSelect">
-        <option value="0">Floor 0</option>
-        <option value="1">Floor 1</option>
-        <option value="2">Floor 2</option>
-        <option value="3">Floor 3</option>
-        <option value="4">Floor 4</option>
+        <option value="0">Korrus 0</option>
+        <option value="1">Korrus 1</option>
+        <option value="2">Korrus 2</option>
+        <option value="3">Korrus 3</option>
+        <option value="4">Korrus 4</option>
       </select>
 
       <div id="map"></div>
-      <button id="submitGuess" disabled>🚀 Launch Guess</button>
+      <button id="submitGuess" disabled>🚀 Arva</button>
       <div id="result"></div>
-      <button id="backHome">🏠 Back to Home</button>
+      <button id="backHome">🏠 Tagasi avalehele</button>
     </div>
   </div>
 
@@ -490,7 +490,7 @@
           ? '🔥 Tubli!'
           : distance < 300
           ? '🙂 Peaaegu!'
-          : '❄️ Lame!';
+          : '❄️ Külm!';
 
       document.getElementById(
         'result'
@@ -517,7 +517,7 @@
       const maxPossible = 1000 * totalRounds;
       document.getElementById(
         'result'
-      ).innerHTML = `🏁 Mäng läbi! Sinu tulemus: ${score} / ${maxPossible} pts`;
+      ).innerHTML = `🏁 Mäng läbi! Sinu tulemus: ${score} / ${maxPossible} punkti`;
 
       // Reveal the “Back to Home” button
       const btn = document.getElementById('backHome');
@@ -530,7 +530,7 @@
     // Handle timeout (no guess before timer hits 0)
     function handleTimeout() {
       clearInterval(timerInterval);
-      document.getElementById('result').innerHTML = "⏰ Aeg otsas!<br>+0 pts";
+      document.getElementById('result').innerHTML = "⏰ Aeg otsas!<br>+0 punkti";
 
       // Reveal the true location immediately (keep user on correct floor)
       const loc = gameLocations[currentIndex];
