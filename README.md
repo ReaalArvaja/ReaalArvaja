@@ -1,5 +1,5 @@
 # ReaalArvaja
-1. pane tööle
+1. pane tööle (app.py/ vajab flaski)
 2. mängi
 3. mängi
 4. mängi
